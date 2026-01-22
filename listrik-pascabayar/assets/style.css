@@ -1,0 +1,308 @@
+:root{
+  --bg:#0b1220;
+  --panel:#0f1b33;
+  --card:#111f3d;
+  --text:#eaf0ff;
+  --muted:#9fb0d0;
+  --line:rgba(255,255,255,.10);
+  --primary:#4f7cff;
+  --danger:#ff4f6d;
+}
+
+*{box-sizing:border-box;font-family:system-ui,Segoe UI,Arial;}
+body{margin:0;background:linear-gradient(120deg,#070b14,#0b1220);color:var(--text);}
+a{color:inherit;text-decoration:none}
+.muted{color:var(--muted);}
+
+.app{display:flex;min-height:100vh}
+
+/* Sidebar */
+.sidebar{
+  width:260px;
+  background:rgba(15,27,51,.78);
+  border-right:1px solid var(--line);
+  padding:18px;
+  backdrop-filter: blur(10px);
+}
+.brand{padding:10px 10px 16px;border-bottom:1px solid var(--line)}
+.brand-title{font-weight:800;letter-spacing:.3px}
+.brand-sub{font-size:12px;color:var(--muted);margin-top:4px}
+.menu{margin-top:14px;display:flex;flex-direction:column;gap:8px}
+.menu a{
+  padding:10px 12px;border:1px solid var(--line);
+  border-radius:12px;background:rgba(255,255,255,.03);
+}
+.menu a:hover{border-color:rgba(255,255,255,.20)}
+.menu a.danger{border-color:rgba(255,79,109,.40);}
+
+/* Content */
+.content{flex:1;padding:22px}
+h2{margin:0 0 14px;letter-spacing:.2px}
+
+.badge{
+  font-size:12px;
+  color:var(--muted);
+  padding:6px 10px;
+  border:1px solid var(--line);
+  border-radius:999px;
+  background:rgba(255,255,255,.03);
+}
+
+/* Buttons */
+.btn{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+  padding:9px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  cursor:pointer;
+  color:var(--text);
+}
+.btn:hover{border-color:rgba(255,255,255,.18)}
+.btn.primary{background:rgba(79,124,255,.18);border-color:rgba(79,124,255,.55)}
+.btn.danger{background:rgba(255,79,109,.12);border-color:rgba(255,79,109,.50)}
+
+/* Toolbar */
+.toolbar{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  margin:10px 0 14px;
+  flex-wrap:wrap;
+}
+.search{
+  display:flex;
+  gap:10px;
+  align-items:center;
+  flex:1;
+  min-width:260px;
+}
+.search input{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.15);
+  color:var(--text);
+  outline:none;
+}
+.search input:focus{border-color:rgba(79,124,255,.65)}
+
+/* Table super rapi */
+.table-wrap{
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+  overflow:hidden;
+}
+.table-scroll{ overflow-x:auto; }
+
+.table{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  table-layout:auto;
+  min-width:980px; /* biar rapi + kalau layar kecil bisa scroll */
+}
+
+.table thead th{
+  font-size:12px;
+  text-transform:uppercase;
+  letter-spacing:.8px;
+  color:var(--muted);
+  background:rgba(0,0,0,.14);
+  padding:12px 14px;
+  border-bottom:1px solid var(--line);
+  vertical-align:middle;
+}
+
+.table tbody td{
+  padding:14px;
+  border-bottom:1px solid var(--line);
+  vertical-align:top;
+}
+
+.table tbody tr:last-child td{ border-bottom:none; }
+.table tbody tr:hover td{ background:rgba(255,255,255,.03); }
+
+.table td.num, .table th.num{ text-align:right; }
+.table td.center, .table th.center{ text-align:center; }
+
+/* alamat wrap */
+.table td.wrap{
+  white-space:normal;
+  word-break:break-word;
+  line-height:1.35;
+}
+
+/* group tombol */
+.btn-group{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* sort header */
+.thsort{
+  display:inline-flex;
+  gap:6px;
+  align-items:center;
+}
+.thsort a{color:inherit}
+.thsort .arrow{
+  font-size:12px;
+  color:var(--muted);
+}
+
+/* Pagination */
+.pager{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:flex-end;
+  margin-top:12px;
+  flex-wrap:wrap;
+}
+.pbtn{
+  padding:8px 10px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(255,255,255,.03);
+  color:var(--text);
+  cursor:pointer;
+}
+.pbtn:hover{border-color:rgba(255,255,255,.18)}
+.pbtn.active{border-color:rgba(79,124,255,.65);background:rgba(79,124,255,.18)}
+.pbtn.disabled{opacity:.4;cursor:not-allowed}
+.dots{color:var(--muted); padding:0 4px}
+
+/* Alert */
+.alert{
+  padding:10px 12px;
+  border:1px solid rgba(255,79,109,.35);
+  background:rgba(255,79,109,.10);
+  border-radius:12px;
+  margin:10px 0;
+}
+
+/* Auth */
+.auth-body{display:grid;place-items:center;min-height:100vh}
+.auth-card{
+  width:360px;background:rgba(255,255,255,.03);
+  border:1px solid var(--line);padding:18px;border-radius:16px;
+}
+
+/* ================================= */
+/*   FORCE ALL TABLE TO CENTER       */
+/* ================================= */
+
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+table th,
+table td {
+  text-align: center !important;
+  vertical-align: middle !important;
+  white-space: nowrap;
+}
+
+/* supaya teks panjang (alamat) tetap rapi walau center */
+table td {
+  white-space: normal;
+  word-break: break-word;
+}
+
+/* tombol di tabel benar-benar center */
+table td a,
+table td button,
+table .btn,
+table .btn-group {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* ===== Form Card ===== */
+.form-card{
+  width:min(900px, 100%);
+  border:1px solid var(--line);
+  border-radius:16px;
+  background:rgba(255,255,255,.03);
+  padding:18px;
+}
+
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:14px;
+  margin-top:12px;
+}
+
+.field label{
+  display:block;
+  font-size:13px;
+  color:var(--muted);
+  margin-bottom:6px;
+}
+
+.field input, .field select, .field textarea{
+  width:100%;
+  padding:10px 12px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:rgba(0,0,0,.15);
+  color:var(--text);
+  outline:none;
+}
+
+.field input:focus, .field select:focus, .field textarea:focus{
+  border-color:rgba(79,124,255,.65);
+}
+
+.field textarea{
+  min-height:90px;
+  resize:vertical;
+}
+
+.span-2{ grid-column: 1 / -1; }
+
+.form-actions{
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+  margin-top:14px;
+  flex-wrap:wrap;
+}
+
+.help{
+  font-size:12px;
+  color:var(--muted);
+  margin-top:6px;
+}
+
+.kwh-box{
+  display:flex;
+  gap:10px;
+  align-items:center;
+}
+
+.kwh-box input{ flex:1; }
+
+.tarif-pill{
+  padding:8px 10px;
+  border:1px solid var(--line);
+  border-radius:12px;
+  background:rgba(255,255,255,.03);
+  font-size:12px;
+  color:var(--muted);
+  min-width:260px;
+  text-align:center;
+}
+
