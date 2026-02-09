@@ -1,7 +1,14 @@
 <?php
-$current = basename($_SERVER['PHP_SELF']);
-function active($file){
-  return strpos($_SERVER['PHP_SELF'], $file) !== false ? 'active' : '';
+$uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+
+function activeExact($path){
+  $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  return $uri === $path ? 'active' : '';
+}
+
+function activePath($prefix){
+  $uri = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
+  return str_starts_with($uri, $prefix) ? 'active' : '';
 }
 ?>
 
@@ -15,22 +22,22 @@ function active($file){
   </div>
 
   <nav class="sidebar-nav">
-    <a class="nav-item <?= active('dashboard') ?>" href="/listrik-pascabayar/dashboard.php">
+    <a class="nav-item <?= activeExact('/listrik-pascabayar/dashboard.php') ?>" href="/listrik-pascabayar/dashboard.php">
       <span class="icon">🏠</span>
       <span>Dashboard</span>
     </a>
 
-    <a class="nav-item <?= active('users/index') ?>" href="/listrik-pascabayar/users/index.php">
+    <a class="nav-item <?= activePath('/listrik-pascabayar/users/') ?>" href="/listrik-pascabayar/users/index.php">
       <span class="icon">👥</span>
-      <span>Data User</span>
+      <span>Data Pelanggan</span>
     </a>
 
-    <a class="nav-item <?= active('bills/index') ?>" href="/listrik-pascabayar/bills/index.php">
+    <a class="nav-item <?= activePath('/listrik-pascabayar/bills/') ?>" href="/listrik-pascabayar/bills/index.php">
       <span class="icon">🧾</span>
       <span>Tagihan</span>
     </a>
 
-    <a class="nav-item <?= active('users/create') ?>" href="/listrik-pascabayar/users/create.php">
+    <a class="nav-item <?= activeExact('/listrik-pascabayar/users/create.php') ?>" href="/listrik-pascabayar/users/create.php">
       <span class="icon">➕</span>
       <span>Tambah User</span>
     </a>

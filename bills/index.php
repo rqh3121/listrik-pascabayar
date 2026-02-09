@@ -2,7 +2,6 @@
 $title = "Tagihan";
 require __DIR__ . "/../partials/header.php";
 require __DIR__ . "/../partials/sidebar.php";
-$tarif = 1500;
 ?>
 <main class="content">
   <h2>Tagihan</h2>
@@ -27,7 +26,7 @@ $tarif = 1500;
             <th><span class="thsort"><a href="#" data-sort="nama">Nama</a><span class="arrow" id="arrow-nama"></span></span></th>
             <th><span class="thsort"><a href="#" data-sort="nomor_kwh">Nomor KWH</a><span class="arrow" id="arrow-nomor_kwh"></span></span></th>
             <th><span class="thsort"><a href="#" data-sort="alamat">Alamat</a><span class="arrow" id="arrow-alamat"></span></span></th>
-            <th><span class="thsort"><a href="#" data-sort="voltase">Voltase</a><span class="arrow" id="arrow-voltase"></span></span></th>
+            <th><span class="thsort"><a href="#" data-sort="daya_va">Voltase</a><span class="arrow" id="arrow-daya_va"></span></span></th>
             <th>Total Tagihan</th>
             <th><span class="thsort"><a href="#" data-sort="status">Status</a><span class="arrow" id="arrow-status"></span></span></th>
             <th class="center">Aksi</th>
@@ -35,7 +34,7 @@ $tarif = 1500;
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="7" class="center muted" style="padding:18px;">Loading...</td></tr>
+          <tr><td colspan="8" class="center muted" style="padding:18px;">Loading...</td></tr>
         </tbody>
       </table>
     </div>
@@ -56,7 +55,7 @@ $tarif = 1500;
   let tmr = null;
 
   function setArrows(){
-    ['nama','nomor_kwh','alamat','voltase','status'].forEach(k=>{
+    ['nama','nomor_kwh','alamat','daya_va','status'].forEach(k=>{
       const el = document.getElementById('arrow-'+k);
       if (!el) return;
       el.textContent = '';
@@ -66,7 +65,7 @@ $tarif = 1500;
 
   async function load(){
     const params = new URLSearchParams(state);
-    tbody.innerHTML = `<tr><td colspan="7" class="center muted" style="padding:18px;">Loading...</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="center muted" style="padding:18px;">Loading...</td></tr>`;
     const res = await fetch(api + '?' + params.toString(), {headers:{'X-Requested-With':'fetch'}});
     const data = await res.json();
     tbody.innerHTML = data.tbody_html;

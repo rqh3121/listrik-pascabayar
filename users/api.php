@@ -14,7 +14,7 @@ $dir  = strtolower($_GET['dir'] ?? 'desc');
 $dir  = ($dir === 'asc') ? 'asc' : 'desc';
 
 /* 🔥 kolom HARUS sesuai database */
-$allowedSort = ['id','nama','nomor_kwh','alamat','voltase','no_hp'];
+$allowedSort = ['id','nama','nomor_kwh','alamat','daya_va','no_hp'];
 if (!in_array($sort, $allowedSort, true)) {
   $sort = 'id';
 }
@@ -40,7 +40,44 @@ if ($q !== '') {
   ];
 }
 
+
 try {
+    /** pagination html */
+  function pagHtml($page, $totalPages) {
+    if ($totalPages <= 1) return '';
+
+    $mk = function($p, $label, $disabled=false, $active=false){
+      $cls = "pbtn";
+      if ($disabled) $cls .= " disabled";
+      if ($active) $cls .= " active";
+      $attr = $disabled ? "" : "data-page=\"$p\"";
+      return "<button class=\"$cls\" $attr type=\"button\">$label</button>";
+    };
+
+    $html = '<div class="pager">';
+    $html .= $mk($page-1, "‹", $page<=1);
+
+    $start = max(1, $page-2);
+    $end   = min($totalPages, $page+2);
+
+    if ($start > 1) {
+      $html .= $mk(1, "1");
+      if ($start > 2) $html .= '<span class="dots">…</span>';
+    }
+
+    for ($i=$start; $i<=$end; $i++){
+      $html .= $mk($i, (string)$i, false, $i===$page);
+    }
+
+    if ($end < $totalPages) {
+      if ($end < $totalPages-1) $html .= '<span class="dots">…</span>';
+      $html .= $mk($totalPages, (string)$totalPages);
+    }
+
+    $html .= $mk($page+1, "›", $page>=$totalPages);
+    $html .= '</div>';
+    return $html;
+  }
   /* total data */
   $stmtTotal = $pdo->prepare("SELECT COUNT(*) FROM users $where");
   foreach ($params as $k => $v) {
@@ -101,7 +138,7 @@ try {
   echo json_encode([
     'tbody_html' => $tbody,
     'count_text' => $totalRows . ' data',
-    'pagination_html' => '' // pagination kamu sudah oke
+    'pagination_html' => pagHtml($page, $totalPages)
   ]);
 
 } catch (Throwable $e) {

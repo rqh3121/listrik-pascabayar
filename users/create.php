@@ -20,6 +20,8 @@ function rupiah($n){
   return "Rp " . number_format((int)$n, 0, ',', '.');
 }
 
+$selectedDaya = (string)($_POST['daya_va'] ?? '900');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   $nama   = trim($_POST['nama'] ?? '');
   $kwhNo  = trim($_POST['nomor_kwh'] ?? '');
@@ -45,47 +47,65 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit;
   }
 }
+
+function selected($val, $cur){
+  return ((string)$val === (string)$cur) ? 'selected' : '';
+}
 ?>
 
 <main class="content">
-  <h2>Tambah User</h2>
+  <div class="page-head">
+    <div>
+      <h2 style="margin:0;">Tambah User</h2>
+      <div class="muted">Input data pelanggan baru. Tagihan dihitung otomatis dari paket daya.</div>
+    </div>
+    <div class="page-actions">
+      <a class="btn" href="index.php">← Kembali</a>
+    </div>
+  </div>
 
   <?php if ($err): ?>
     <div class="alert"><?= htmlspecialchars($err) ?></div>
   <?php endif; ?>
 
-  <div class="form-card">
+  <div class="form-card form-card--narrow">
     <form method="post" autocomplete="off">
       <div class="form-grid">
         <div class="field">
           <label>Nama</label>
-          <input type="text" name="nama" value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>" placeholder="Nama pelanggan">
+          <input required type="text" name="nama"
+                 value="<?= htmlspecialchars($_POST['nama'] ?? '') ?>"
+                 placeholder="Nama pelanggan">
         </div>
 
         <div class="field">
           <label>Nomor KWH</label>
-          <input type="text" name="nomor_kwh" value="<?= htmlspecialchars($_POST['nomor_kwh'] ?? '') ?>" placeholder="Contoh: 983256">
+          <input required type="text" name="nomor_kwh"
+                 value="<?= htmlspecialchars($_POST['nomor_kwh'] ?? '') ?>"
+                 placeholder="Contoh: 098xxxx">
         </div>
 
         <div class="field span-2">
           <label>Alamat</label>
-          <textarea name="alamat" placeholder="Alamat lengkap..."><?= htmlspecialchars($_POST['alamat'] ?? '') ?></textarea>
+          <textarea required name="alamat" placeholder="Alamat lengkap..."><?= htmlspecialchars($_POST['alamat'] ?? '') ?></textarea>
         </div>
 
         <div class="field">
           <label>Nomor HP</label>
-          <input type="text" name="no_hp" value="<?= htmlspecialchars($_POST['no_hp'] ?? '') ?>" placeholder="Contoh: 08xxxx">
+          <input required type="text" name="no_hp" inputmode="numeric"
+                 value="<?= htmlspecialchars($_POST['no_hp'] ?? '') ?>"
+                 placeholder="Contoh: 08xxxx">
+          <div class="help">Gunakan format 08xxxxxxxxxx</div>
         </div>
 
         <div class="field">
           <label>Daya (VA) / Paket Bulanan</label>
-          <select name="daya_va" id="daya_va">
-            <option value="900">900 VA — <?= rupiah(452986) ?>/bulan</option>
-            <option value="1300">1.300 VA - 2.200 VA — <?= rupiah(800700) ?>/bulan</option>
-            <option value="3500">R-2 (3.500 - 5.500 VA) — <?= rupiah(1299530) ?>/bulan</option>
-            <option value="6600">R-3 (≥ 6.600 VA) — <?= rupiah(1699530) ?>/bulan</option>
+          <select required name="daya_va" id="daya_va">
+            <option value="900"  <?= selected('900',$selectedDaya) ?>>900 VA — <?= rupiah(452986) ?>/bulan</option>
+            <option value="1300" <?= selected('1300',$selectedDaya) ?>>1.300 VA - 2.200 VA — <?= rupiah(800700) ?>/bulan</option>
+            <option value="3500" <?= selected('3500',$selectedDaya) ?>>R-2 (3.500 - 5.500 VA) — <?= rupiah(1299530) ?>/bulan</option>
+            <option value="6600" <?= selected('6600',$selectedDaya) ?>>R-3 (≥ 6.600 VA) — <?= rupiah(1699530) ?>/bulan</option>
           </select>
-
           <div class="help">Tagihan otomatis mengikuti paket (tanpa input kWh).</div>
         </div>
 
@@ -116,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   };
 
   function rupiah(n){
-    return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    return 'Rp ' + (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
   }
 
   function update(){

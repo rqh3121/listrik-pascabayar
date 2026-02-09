@@ -42,8 +42,9 @@ $tanggal = date("d-m-Y H:i");
   <link rel="stylesheet" href="../assets/style.css">
   <style>
     body{
-      background: linear-gradient(120deg,#070b14,#0b1220);
+    background: var(--bg);
     }
+
     .receipt-page{
       min-height:100vh;
       display:grid;

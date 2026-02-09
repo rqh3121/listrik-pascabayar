@@ -4,31 +4,22 @@ require __DIR__ . "/partials/header.php";
 require __DIR__ . "/partials/sidebar.php";
 require __DIR__ . "/config.php";
 
-// KPI
+// KPI (initial render)
 $totalUser  = (int)$pdo->query("SELECT COUNT(*) FROM users")->fetchColumn();
 $totalLunas = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE status='LUNAS'")->fetchColumn();
 $totalBelum = (int)$pdo->query("SELECT COUNT(*) FROM users WHERE status='BELUM LUNAS'")->fetchColumn();
 $totalTagihan = (int)$pdo->query("SELECT COALESCE(SUM(tagihan_bulanan),0) FROM users")->fetchColumn();
-
 $persen = $totalUser > 0 ? round(($totalLunas / $totalUser) * 100) : 0;
 
-// Data grafik: rekap per daya
+// chart initial
 $stmtDaya = $pdo->query("
-  SELECT daya_va,
-         COUNT(*) AS jumlah,
-         COALESCE(SUM(tagihan_bulanan),0) AS total
+  SELECT daya_va, COUNT(*) AS jumlah, COALESCE(SUM(tagihan_bulanan),0) AS total
   FROM users
   GROUP BY daya_va
   ORDER BY daya_va ASC
 ");
-$rekapDaya = $stmtDaya->fetchAll();
+$rekapDaya = $stmtDaya->fetchAll(PDO::FETCH_ASSOC);
 
-// List belum lunas
-$stmt = $pdo->prepare("SELECT * FROM users WHERE status='BELUM LUNAS' ORDER BY id DESC LIMIT 8");
-$stmt->execute();
-$belum = $stmt->fetchAll();
-
-// Normalize untuk chart (biar paket utama muncul walau 0)
 $paketKeys = [900,1300,3500,6600];
 $rekapMap = [];
 foreach ($rekapDaya as $r) {
@@ -47,15 +38,8 @@ foreach ($paketKeys as $k) {
 }
 
 $chartData = [
-  'status' => [
-    'lunas' => $totalLunas,
-    'belum' => $totalBelum,
-  ],
-  'bar' => [
-    'labels' => $barLabels,
-    'totals' => $barTotals,
-    'counts' => $barCounts,
-  ]
+  'status' => ['lunas' => $totalLunas, 'belum' => $totalBelum],
+  'bar' => ['labels' => $barLabels, 'totals' => $barTotals, 'counts' => $barCounts]
 ];
 
 function rupiah($n){
@@ -81,61 +65,66 @@ function rupiah($n){
   <div class="dash-grid">
     <div class="card kpi">
       <div class="muted">Total Pelanggan</div>
-      <div class="big"><?= number_format($totalUser,0,',','.') ?></div>
+      <div class="big" id="kpi-totalUser"><?= number_format($totalUser,0,',','.') ?></div>
       <div class="mini muted">Semua data pelanggan</div>
     </div>
 
     <div class="card kpi">
       <div class="muted">LUNAS</div>
-      <div class="big"><?= number_format($totalLunas,0,',','.') ?></div>
-      <div class="mini muted"><?= $persen ?>% sudah lunas</div>
+      <div class="big" id="kpi-totalLunas"><?= number_format($totalLunas,0,',','.') ?></div>
+      <div class="mini muted"><span id="kpi-persen"><?= (int)$persen ?></span>% sudah lunas</div>
     </div>
 
     <div class="card kpi">
       <div class="muted">BELUM LUNAS</div>
-      <div class="big"><?= number_format($totalBelum,0,',','.') ?></div>
+      <div class="big" id="kpi-totalBelum"><?= number_format($totalBelum,0,',','.') ?></div>
       <div class="mini muted">Perlu ditindak</div>
     </div>
 
     <div class="card kpi">
       <div class="muted">Total Tagihan / Bulan</div>
-      <div class="big"><?= rupiah($totalTagihan) ?></div>
+      <div class="big" id="kpi-totalTagihan"><?= rupiah($totalTagihan) ?></div>
       <div class="mini muted">Akumulasi semua pelanggan</div>
     </div>
   </div>
 
-  <!-- Charts + table -->
   <div class="dash-layout">
-    <!-- LEFT: charts -->
+    <!-- LEFT -->
     <div class="stack">
       <div class="card">
         <div class="card-title">Grafik Status Pembayaran</div>
+
         <div class="chart-row">
           <div class="chart-box">
-            <canvas id="donut" width="320" height="240"></canvas>
+            <canvas id="donut"></canvas>
           </div>
+
           <div class="legend">
             <div class="leg">
               <span class="dot dot-blue"></span>
               <div>
                 <div class="muted">LUNAS</div>
-                <div class="strong"><?= number_format($totalLunas,0,',','.') ?> pelanggan</div>
+                <div class="strong"><span id="leg-lunas"><?= number_format($totalLunas,0,',','.') ?></span> pelanggan</div>
               </div>
             </div>
             <div class="leg">
               <span class="dot dot-amber"></span>
               <div>
                 <div class="muted">BELUM LUNAS</div>
-                <div class="strong"><?= number_format($totalBelum,0,',','.') ?> pelanggan</div>
+                <div class="strong"><span id="leg-belum"><?= number_format($totalBelum,0,',','.') ?></span> pelanggan</div>
               </div>
             </div>
 
             <div class="progress-wrap">
               <div class="muted" style="margin-bottom:8px;">Progress Lunas</div>
+
               <div class="progress-bar">
-                <div class="progress-fill" style="width: <?= $persen ?>%"></div>
+                <div id="kpi-progress" class="progress-fill" style="width: <?= $persen ?>%"></div>
               </div>
-              <div class="mini muted" style="margin-top:8px;"><?= $persen ?>% pelanggan sudah lunas</div>
+
+              <div id="kpi-progressText" class="mini muted" style="margin-top:8px;">
+                <?= $persen ?>% pelanggan sudah lunas
+              </div>
             </div>
           </div>
         </div>
@@ -147,64 +136,69 @@ function rupiah($n){
           Menampilkan total tagihan akumulasi per paket daya.
         </div>
         <div class="chart-big">
-          <canvas id="bar" width="760" height="280"></canvas>
+          <canvas id="bar"></canvas>
         </div>
       </div>
     </div>
 
-    <!-- RIGHT: table -->
+    <!-- RIGHT -->
     <div class="card">
       <div class="card-title">Belum Lunas Terbaru</div>
 
       <div class="table-scroll">
-        <table class="table">
+        <table class="table table-dashboard">
           <thead>
             <tr>
               <th>Nama</th>
               <th>No KWH</th>
               <th>Daya</th>
               <th>Tagihan</th>
-              <th class="center">Aksi</th>
             </tr>
           </thead>
-          <tbody>
-          <?php if(!$belum): ?>
-            <tr><td colspan="5" class="center muted" style="padding:16px;">Semua pelanggan sudah lunas ✅</td></tr>
-          <?php else: foreach($belum as $u): ?>
-            <tr>
-              <td><?= htmlspecialchars($u['nama']) ?></td>
-              <td><?= htmlspecialchars($u['nomor_kwh']) ?></td>
-              <td><?= number_format((int)($u['daya_va'] ?? 0),0,',','.') ?> VA</td>
-              <td><?= rupiah((int)($u['tagihan_bulanan'] ?? 0)) ?>/bulan</td>
-              <td class="center">
-                <div class="btn-group">
-                  <a class="btn" target="_blank" href="bills/print.php?id=<?= (int)$u['id'] ?>">Cetak</a>
-                  <button class="btn primary paybtn" data-id="<?= (int)$u['id'] ?>" data-to="LUNAS" type="button">Lunas</button>
-                </div>
-              </td>
-            </tr>
-          <?php endforeach; endif; ?>
+
+          <tbody id="unpaidTbody">
+            <tr><td colspan="5" class="center muted" style="padding:16px;">Loading...</td></tr>
           </tbody>
         </table>
       </div>
+
+      <div id="unpaidPager"></div>
     </div>
   </div>
 </main>
 
 <script>
-const DATA = <?= json_encode($chartData, JSON_UNESCAPED_UNICODE) ?>;
+let DATA = <?= json_encode($chartData, JSON_UNESCAPED_UNICODE) ?>;
 
 function rupiah(n){
   n = Math.round(n || 0);
   return 'Rp ' + n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
+function fmtNum(n){
+  return (n||0).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
 
-/* ===== DONUT CHART (canvas) ===== */
-(function drawDonut(){
+/* Canvas helper */
+function fitCanvas(canvas, w, h){
+  const dpr = window.devicePixelRatio || 1;
+  canvas.style.width = w + "px";
+  canvas.style.height = h + "px";
+  canvas.width = Math.floor(w * dpr);
+  canvas.height = Math.floor(h * dpr);
+  const ctx = canvas.getContext("2d");
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  return ctx;
+}
+
+/* Donut */
+function drawDonut(){
   const c = document.getElementById('donut');
   if(!c) return;
-  const ctx = c.getContext('2d');
-  const W = c.width, H = c.height;
+  const parent = c.parentElement;
+  const W = Math.min(320, parent.clientWidth);
+  const H = 240;
+  const ctx = fitCanvas(c, W, H);
+
   const cx = W/2, cy = H/2 + 5;
   const r = Math.min(W,H) * 0.33;
   const thick = r * 0.45;
@@ -215,15 +209,14 @@ function rupiah(n){
 
   ctx.clearRect(0,0,W,H);
 
-  // ring background
   ctx.beginPath();
   ctx.arc(cx, cy, r, 0, Math.PI*2);
-  ctx.strokeStyle = 'rgba(255,255,255,.10)';
+  ctx.strokeStyle = 'rgba(0,0,0,.08)';
   ctx.lineWidth = thick;
   ctx.stroke();
 
   if(total <= 0){
-    ctx.fillStyle = 'rgba(255,255,255,.65)';
+    ctx.fillStyle = 'rgba(0,0,0,.50)';
     ctx.font = '700 14px system-ui';
     ctx.textAlign = 'center';
     ctx.fillText('Belum ada data', cx, cy);
@@ -247,28 +240,30 @@ function rupiah(n){
     start += ang;
   });
 
-  // center text
-  ctx.fillStyle = 'rgba(255,255,255,.92)';
+  ctx.fillStyle = 'rgba(17,24,39,.92)';
   ctx.font = '900 20px system-ui';
   ctx.textAlign = 'center';
   ctx.fillText(Math.round((lunas/total)*100) + '%', cx, cy - 2);
 
-  ctx.fillStyle = 'rgba(255,255,255,.60)';
-  ctx.font = '600 12px system-ui';
+  ctx.fillStyle = 'rgba(17,24,39,.55)';
+  ctx.font = '700 12px system-ui';
   ctx.fillText('LUNAS', cx, cy + 16);
-})();
+}
 
-/* ===== BAR CHART (canvas) ===== */
-(function drawBar(){
+/* Bar */
+function drawBar(){
   const c = document.getElementById('bar');
   if(!c) return;
-  const ctx = c.getContext('2d');
 
-  const labels = DATA.bar.labels;
-  const totals = DATA.bar.totals;
+  const parent = c.parentElement;
+  const W = parent.clientWidth;
+  const H = 280;
+  const ctx = fitCanvas(c, W, H);
 
-  const W = c.width, H = c.height;
-  const padL = 44, padR = 16, padT = 18, padB = 42;
+  const labels = DATA.bar.labels || [];
+  const totals = DATA.bar.totals || [];
+
+  const padL = 56, padR = 16, padT = 18, padB = 44;
   const chartW = W - padL - padR;
   const chartH = H - padT - padB;
 
@@ -277,8 +272,7 @@ function rupiah(n){
   const maxVal = Math.max(1, ...totals);
   const gridLines = 4;
 
-  // grid
-  ctx.strokeStyle = 'rgba(255,255,255,.08)';
+  ctx.strokeStyle = 'rgba(0,0,0,.08)';
   ctx.lineWidth = 1;
   for(let i=0;i<=gridLines;i++){
     const y = padT + (chartH/gridLines)*i;
@@ -288,74 +282,161 @@ function rupiah(n){
     ctx.stroke();
   }
 
-  // y labels
-  ctx.fillStyle = 'rgba(255,255,255,.55)';
+  ctx.fillStyle = 'rgba(17,24,39,.55)';
   ctx.font = '11px system-ui';
   ctx.textAlign = 'right';
   for(let i=0;i<=gridLines;i++){
     const v = maxVal - (maxVal/gridLines)*i;
     const y = padT + (chartH/gridLines)*i + 4;
-    ctx.fillText((Math.round(v/1000000)*1) + 'jt', padL-6, y);
+    ctx.fillText((v/1000000).toFixed(1) + ' jt', padL-8, y);
   }
 
-  const n = labels.length;
+  const n = labels.length || 1;
   const gap = 16;
   const barW = (chartW - gap*(n-1)) / n;
 
-  for(let i=0;i<n;i++){
+  for(let i=0;i<labels.length;i++){
     const val = totals[i] || 0;
     const h = (val / maxVal) * chartH;
     const x = padL + i*(barW + gap);
     const y = padT + (chartH - h);
 
-    // bar
     const grad = ctx.createLinearGradient(0,y,0,y+h);
     grad.addColorStop(0,'rgba(59,130,246,.85)');
-    grad.addColorStop(1,'rgba(37,99,235,.35)');
+    grad.addColorStop(1,'rgba(37,99,235,.30)');
     ctx.fillStyle = grad;
-    ctx.beginPath();
-    const r = 10;
-    ctx.roundRect(x, y, barW, h, r);
-    ctx.fill();
 
-    // value top
-    ctx.fillStyle = 'rgba(255,255,255,.85)';
+    if (ctx.roundRect) {
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, h, 10);
+      ctx.fill();
+    } else {
+      ctx.fillRect(x, y, barW, h);
+    }
+
+    ctx.fillStyle = 'rgba(17,24,39,.78)';
     ctx.font = '700 11px system-ui';
     ctx.textAlign = 'center';
-    ctx.fillText((val>=1000000 ? (val/1000000).toFixed(2)+'jt' : rupiah(val)), x + barW/2, y - 6);
+    const txt = (val>=1000000 ? (val/1000000).toFixed(2)+' jt' : rupiah(val));
+    ctx.fillText(txt, x + barW/2, y - 6);
 
-    // x label
-    ctx.fillStyle = 'rgba(255,255,255,.65)';
+    ctx.fillStyle = 'rgba(17,24,39,.60)';
     ctx.font = '700 12px system-ui';
     ctx.fillText(labels[i] + ' VA', x + barW/2, H - 18);
   }
-})();
+}
 
-/* Toggle status cepat (buat tombol Lunas di tabel) */
-document.addEventListener('click', async (e)=>{
-  const btn = e.target.closest('.paybtn');
-  if(!btn) return;
+function redraw(){
+  drawDonut();
+  drawBar();
+}
 
-  const id = btn.dataset.id;
-  const to = btn.dataset.to;
+window.addEventListener('resize', ()=>{
+  clearTimeout(window.__tmr);
+  window.__tmr = setTimeout(redraw, 100);
+});
+redraw();
 
-  btn.disabled = true;
-  btn.textContent = '...';
+/* Refresh KPI + chart from API */
+async function refreshKpiAndChart(){
+  const res = await fetch('dashboard_kpi_api.php', { headers:{'X-Requested-With':'fetch'} });
+  const json = await res.json();
+  if(!json.ok) return;
 
-  const body = new URLSearchParams();
-  body.set('id', id);
-  body.set('to', to);
+  // KPI
+  document.getElementById('kpi-totalUser').textContent = fmtNum(json.kpi.totalUser);
+  document.getElementById('kpi-totalLunas').textContent = fmtNum(json.kpi.totalLunas);
+  document.getElementById('kpi-totalBelum').textContent = fmtNum(json.kpi.totalBelum);
+  document.getElementById('kpi-totalTagihan').textContent = rupiah(json.kpi.totalTagihan);
+  document.getElementById('kpi-persen').textContent = json.kpi.persen;
 
-  const res = await fetch('bills/toggle_status.php', {
-    method:'POST',
-    headers:{'Content-Type':'application/x-www-form-urlencoded'},
-    body: body.toString()
+  // legend
+  document.getElementById('leg-lunas').textContent = fmtNum(json.kpi.totalLunas);
+  document.getElementById('leg-belum').textContent = fmtNum(json.kpi.totalBelum);
+
+  // progress
+  const fill = document.getElementById('kpi-progress');
+  const txt  = document.getElementById('kpi-progressText');
+  if (fill) fill.style.width = json.kpi.persen + '%';
+  if (txt) txt.textContent = json.kpi.persen + '% pelanggan sudah lunas';
+
+  // chart data
+  DATA.status = json.chart.status;
+  DATA.bar = json.chart.bar;
+
+  redraw();
+}
+
+/* Unpaid table */
+(function(){
+  const unpaidTbody = document.getElementById('unpaidTbody');
+  const unpaidPager = document.getElementById('unpaidPager');
+  let unpaidPage = 1;
+
+  async function loadUnpaid(page = 1){
+    unpaidPage = page;
+
+    unpaidTbody.innerHTML = `<tr><td colspan="5" class="center muted" style="padding:16px;">Loading...</td></tr>`;
+
+    const res = await fetch('dashboard_unpaid_api.php?page=' + page, {
+      headers:{'X-Requested-With':'fetch'}
+    });
+    const data = await res.json();
+
+    if (data.error) {
+      unpaidTbody.innerHTML = `<tr><td colspan="5" class="center muted" style="padding:16px;">Gagal load data</td></tr>`;
+      unpaidPager.innerHTML = '';
+      return;
+    }
+
+    unpaidTbody.innerHTML = data.tbody_html || '';
+    unpaidPager.innerHTML = data.pagination_html || '';
+  }
+
+  // pagination
+  document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#unpaidPager .pbtn');
+    if (!btn || btn.classList.contains('disabled') || !btn.dataset.page) return;
+    loadUnpaid(parseInt(btn.dataset.page, 10));
   });
 
-  const data = await res.json();
-  if(!data.ok) alert(data.message || 'Gagal');
-  location.reload();
-});
+  // click lunas
+  document.addEventListener('click', async (e)=> {
+    const btn = e.target.closest('#unpaidTbody .paybtn');
+    if(!btn) return;
+
+    const id = btn.dataset.id;
+    const to = btn.dataset.to;
+
+    btn.disabled = true;
+    const oldText = btn.textContent;
+    btn.textContent = '...';
+
+    const body = new URLSearchParams();
+    body.set('id', id);
+    body.set('to', to);
+
+    const res = await fetch('bills/toggle_status.php', {
+      method:'POST',
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body: body.toString()
+    });
+    const out = await res.json();
+
+    if(!out.ok){
+      alert(out.message || 'Gagal');
+      btn.disabled = false;
+      btn.textContent = oldText;
+      return;
+    }
+
+    // refresh table + KPI/chart
+    loadUnpaid(unpaidPage);
+    refreshKpiAndChart();
+  });
+
+  loadUnpaid(1);
+})();
 </script>
 
 </div></body></html>

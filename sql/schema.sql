@@ -9,9 +9,6 @@ CREATE TABLE admins (
 );
 
 -- Default admin: username admin, password admin123
--- password_hash di bawah ini contoh, nanti kita isi via script (lebih aman),
--- tapi biar cepat, kita pakai cara "generate lewat PHP" di langkah 4.
--- (Kalau mau langsung insert hash, bilang aja, nanti aku bikinin hash yang valid)
 
 CREATE TABLE users (
   id INT AUTO_INCREMENT PRIMARY KEY,
@@ -20,5 +17,10 @@ CREATE TABLE users (
   alamat TEXT NOT NULL,
   voltase INT NOT NULL,     -- “jumlah voltase yang diambil”
   no_hp VARCHAR(20) NOT NULL,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-);
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  status enum('BELUM LUNAS', 'LUNAS') NOT NULL DEFAULT,
+  daya_va int(11) NOT NULL,
+  tarif_per_kwh decimal(10,2) NOT NULL,
+  kwh 	int(11) NOT NULL,
+  tagihan_bulanan int(11) NOT NULL
+    );

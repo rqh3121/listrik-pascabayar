@@ -4,7 +4,7 @@ require __DIR__ . "/../partials/header.php";
 require __DIR__ . "/../partials/sidebar.php";
 ?>
 <main class="content">
-  <h2>Data User</h2>
+  <h2>Data Pelanggan</h2>
 
   <div class="toolbar">
     <form class="search" id="searchForm">
@@ -120,7 +120,7 @@ require __DIR__ . "/../partials/sidebar.php";
     });
   });
 
-  // pagination klik
+ // pagination klik
   document.addEventListener('click', (e)=>{
     const btn = e.target.closest('.pbtn');
     if (!btn || btn.classList.contains('disabled') || !btn.dataset.page) return;
